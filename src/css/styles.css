@@ -7,62 +7,65 @@ body {
     'Open Sans', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #c8d7f3;
+  background-color: #fafafa;
   color: #212121;
   line-height: 1.5;
-  margin: 0;
-  padding: 30px;
 }
 
 #search-box {
   font: inherit;
-  font-size: 24px;
-  font-weight: 500;
-  padding: 10px;
+  padding: 8px;
   max-width: 320px;
-  margin-bottom: 24px;
-  margin-left: 40px;
-  border: none;
-  border-radius: 10px;
-  box-shadow: 0 5px 10px rgba(154, 160, 185, 0.05), 0 15px 40px rgba(0, 0, 0, 0.1);
-}
-
-#search-box:focus {
-  outline: none;
+  margin-bottom: 16px;
 }
 
 .country-list {
   list-style: none;
+  padding: 0;
 }
 
-.country-list li {
-  display: flex;
-  padding-bottom: 10px;
+/* Стили для списка стран */
 
-  font-size: 22px;
-  font-weight: 500;
-}
-
-.country-list img {
-  margin-right: 10px;
-}
-
-.country-info {
-  margin-left: 50px;
-}
-
-.country-info img {
-  margin-right: 10px;
-}
-
-.country-info h1 {
+.country-list__item {
   display: flex;
   align-items: center;
-  margin-top: 0;
-  font-size: 40px;
 }
 
-.country-info p {
-  font-size: 22px;
-  font-weight: 500;
+.country-list__item--flag {
+  width: 30px;
+  height: 20px;
+}
+
+.country-list__item--name {
+  font-weight: 400;
+  font-size: 20px;
+  margin: 5px 10px;
+}
+
+/* Стили для детальной информации о стране */
+
+.country-info__list {
+  list-style: none;
+  padding: 0;
+}
+
+.country-info__item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.country-info__item--flag {
+  width: 60px;
+  height: 40px;
+  margin-right: 10px;
+}
+
+.country-info__item--name {
+  font-size: 30px;
+}
+
+.country-info__item--categories {
+  font-weight: bold;
+  margin-right: 5px;
 }

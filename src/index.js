@@ -1,72 +1,105 @@
 import './css/styles.css';
 import debounce from 'lodash.debounce';
-import { Notify } from 'notiflix/build/notiflix-notify-aio';
+import Notiflix from 'notiflix';
+
+// Импортируем функцию из fetchCountries.js
+
 import { fetchCountries } from './js/fetchCountries';
+
+// Переменные для разметки
+
+const countryInput = document.querySelector('#search-box');
+const countryList = document.querySelector('.country-list');
+const countryInfo = document.querySelector('.country-info');
+
+// Вешаем debounce
 
 const DEBOUNCE_DELAY = 300;
 
-const inputEl = document.getElementById('search-box');
-const listEl = document.querySelector('.country-list');
-const infoEl = document.querySelector('.country-info');
+countryInput.addEventListener('input', debounce(onCountryInput, DEBOUNCE_DELAY));
 
-const cleanMarkup = ref => (ref.innerHTML = '');
+// Функция при инпуте
 
-const inputHandler = e => {
-  const textInput = e.target.value.trim();
+function onCountryInput() {
+  // Тримим введенную строку что бы избавится от проблемы пробелов
 
-  if (!textInput) {
-    cleanMarkup(listEl);
-    cleanMarkup(infoEl);
-    return;
+  const name = countryInput.value.trim();
+  if (name === '') {
+    return (countryList.innerHTML = ''), (countryInfo.innerHTML = '');
   }
 
-  fetchCountries(textInput)
-    .then(data => {
-      console.log(data);
-      if (data.length > 10) {
-        Notify.info('Too many matches found. Please enter a more specific name');
-        return;
+  // Вызываем функцию из fetchCountries.js
+
+  fetchCountries(name)
+    .then(country => {
+      countryList.innerHTML = '';
+      countryInfo.innerHTML = '';
+
+      // Если найдена 1 страна - отрисовываем детально, если от 2 до 10 - выводим список стран, если больше - выводим сообщение "Слишком много совпадений"
+
+      if (country.length === 1) {
+        countryInfo.insertAdjacentHTML('beforeend', markupCountryInfo(country));
+      } else if (country.length >= 10) {
+        ifTooManyMatchesAlert();
+      } else {
+        countryList.insertAdjacentHTML('beforeend', markupCountryList(country));
       }
-      renderMarkup(data);
     })
-    .catch(err => {
-      cleanMarkup(listEl);
-      cleanMarkup(infoEl);
-      Notify.failure('Oops, there is no country with that name');
-    });
-};
+    //   Ловим ошибку при вводе
+    .catch(ifWrongNameAlert);
+}
 
-const renderMarkup = data => {
-  if (data.length === 1) {
-    cleanMarkup(listEl);
-    const markupInfo = createInfoMarkup(data);
-    infoEl.innerHTML = markupInfo;
-  } else {
-    cleanMarkup(infoEl);
-    const markupList = createListMarkup(data);
-    listEl.innerHTML = markupList;
-  }
-};
+// Функция для вывода алерта, если больше 10 совпадений
 
-const createListMarkup = data => {
-  return data
-    .map(
-      ({ name, flags }) =>
-        `<li><img src="${flags.png}" alt="${name.official}" width="60" height="40">${name.official}</li>`,
-    )
+function ifTooManyMatchesAlert() {
+  Notiflix.Notify.info('Too many matches found. Please enter a more specific name.');
+}
+
+// Функция для вывода алерта, если есть ошибка при вводе
+
+function ifWrongNameAlert() {
+  Notiflix.Notify.failure('Oops, there is no country with that name');
+}
+
+// Отрисовка списка стран
+
+function markupCountryList(country) {
+  const layoutCountryList = country
+    .map(({ name, flags }) => {
+      const layout = `
+          <li class="country-list__item">
+              <img class="country-list__item--flag" src="${flags.svg}" alt="Flag of ${name.official}">
+              <h2 class="country-list__item--name">${name.official}</h2>
+          </li>
+          `;
+      return layout;
+    })
     .join('');
-};
+  return layoutCountryList;
+}
 
-const createInfoMarkup = data => {
-  return data.map(
-    ({ name, capital, population, flags, languages }) =>
-      `<h1><img src="${flags.png}" alt="${name.official}" width="40" height="40">${
+// Детальная информация о стране, если совпадение только одно
+
+function markupCountryInfo(country) {
+  const layoutCountryInfo = country
+    .map(({ name, flags, capital, population, languages }) => {
+      const layout = `
+        <ul class="country-info__list">
+            <li class="country-info__item">
+              <img class="country-info__item--flag" src="${flags.svg}" alt="Flag of ${
         name.official
-      }</h1>
-      <p>Capital: ${capital}</p>
-      <p>Population: ${population}</p>
-      <p>Languages: ${Object.values(languages)}</p>`,
-  );
-};
-
-inputEl.addEventListener('input', debounce(inputHandler, DEBOUNCE_DELAY));
+      }">
+              <h2 class="country-info__item--name">${name.official}</h2>
+            </li>
+            <li class="country-info__item"><span class="country-info__item--categories">Capital: </span>${capital}</li>
+            <li class="country-info__item"><span class="country-info__item--categories">Population: </span>${population}</li>
+            <li class="country-info__item"><span class="country-info__item--categories">Languages: </span>${Object.values(
+              languages,
+            ).join(', ')}</li>
+        </ul>
+        `;
+      return layout;
+    })
+    .join('');
+  return layoutCountryInfo;
+}
